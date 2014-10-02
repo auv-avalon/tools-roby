@@ -22,7 +22,10 @@ module Roby
                 interface.on_notification do |*args|
                     if notifications_enabled?
                         begin
-                            io.write_packet([:notification, *args])
+                            if ::State.lowlevel_state != 5
+                                io.write_packet([:notification, *args])
+                            else
+                            end
                         rescue ComError
                             # The disconnection is going to be handled by the caller
                             # of #poll
