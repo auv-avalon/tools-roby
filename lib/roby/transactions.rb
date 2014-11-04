@@ -350,6 +350,87 @@ module Roby
 	    self
 	end
 
+        def tasks_to_start
+            known_tasks.reject do |t| 
+                tmp = proxy_objects.values.select do |v| 
+                    t == v
+                end
+                tmp.size != 0
+            end
+        end
+        
+        def tasks_to_reconfigure
+            arr = known_tasks.reject do |kt| 
+                a = discarded_tasks.select do |dt| 
+                    if dt.class != kt.class #micro optimization
+                        false 
+                    else
+                        dt.fullfills?(kt)
+                    end
+                end
+                a.size != 0
+            end
+            arr.delete_if do |kt|
+                tasks_to_start.include?(kt)
+            end
+            arr
+        end
+       
+        def changes_in_dataflow()
+            new_flow = nil
+            #begin
+            current_flow = Syskit::Flows::DataFlow
+            new_flow = Syskit::ConnectionGraph.new 
+            old_flow = Syskit::ConnectionGraph.new
+            Syskit::Runtime::ConnectionManagement.update_required_dataflow_graph(real_plan.known_tasks.select{|t| t.kind_of?(Syskit::TaskContext)},old_flow)
+            Syskit::Runtime::ConnectionManagement.update_required_dataflow_graph(known_tasks.select{|t| t.kind_of?(Syskit::TaskContext)},new_flow)
+            
+            new = new_flow.to_a.select{|t| !old_flow.to_a.include?(t)}
+
+            removed = Array.new 
+            reconf = Array.new 
+            old_flow.to_a.each do |t1,t2,conns|
+                valid = true
+                reconfigured = false 
+                new_flow.to_a.each do |tt1,tt2,conns2|
+                    if
+                        proxy_objects[t1] == tt1 and
+                        proxy_objects[t2] == tt2
+                        if conns != conns2
+                            reconfigured = true
+                        end
+                        valid = false
+                        break
+                    end
+                end
+                if valid
+                    if reconfigured
+                        reconf << [t1,t2,conns] 
+                    else
+                        removed << [t1,t2,conns]
+                    end
+                end
+            end
+            
+            [new_flow,new,removed,reconf]
+        end
+
+        def tasks_to_stop
+            rc_tasks = tasks_to_reconfigure
+            to_start_tasks = tasks_to_start
+
+            res = unneeded_tasks.select do |u| 
+                a = rc_tasks.select do |r| 
+                    u.class.fullfills?(r.class) 
+                end
+                a.size == 0
+            end
+            res.delete_if do |d| 
+                to_start_tasks.include?(d)
+            end
+            res
+        end
+
 	def unmark_permanent(t)
 	    raise "transaction #{self} has been either committed or discarded. No modification allowed" if frozen?
             t = t.as_plan
