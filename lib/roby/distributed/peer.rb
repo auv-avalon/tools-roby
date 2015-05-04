@@ -24,7 +24,7 @@ module Roby::Distributed
     class ConnectionTask < Roby::Task
 	local_only
 
-	argument :peer
+	argument :peer, :type => :string
 	event :ready
 
 	event :aborted, :terminal => true do |context|

@@ -121,4 +121,3 @@ require 'roby/interface/job'
 require 'roby/robot'
 require 'roby/actions'
 require 'roby/coordination'
-

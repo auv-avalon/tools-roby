@@ -1,7 +1,7 @@
 module Roby
     module Tasks
         class Timeout < Roby::Task
-            argument :delay
+            argument :delay, :type => :double
             terminates
 
             event :timed_out

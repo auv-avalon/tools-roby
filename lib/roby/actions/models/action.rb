@@ -6,7 +6,7 @@ module Roby
             # Structure that stores the information about planning method arguments
             #
             # See MethodDescription
-            Argument = Struct.new :name, :doc, :required, :default do
+            Argument = Struct.new :name, :doc, :required, :default, :type do
                 def pretty_print(pp)
                     pp.text "#{name}: #{doc}"
                     if required then pp.text ' (required)'
@@ -91,14 +91,19 @@ module Roby
             end
 
             # Documents a new required argument to the method
-            def required_arg(name, doc = nil)
-                arguments << Argument.new(name.to_s, doc, true)
+            def required_arg(name, type, doc = nil)
+                raise ArgumentError, "Please give a type for #{name}" if type.nil?
+                arg = Argument.new(name.to_s, doc, true)
+                arg.type = type
+                arguments << arg 
                 self
             end
             # Documents a new optional argument to the method
-            def optional_arg(name, doc = nil, default = nil)
+            def optional_arg(name, type, doc=nil, default= nil)
+                raise ArgumentError, "Please give a type for #{name}" if type.nil?
                 arg = Argument.new(name.to_s, doc, false)
                 arg.default = default
+                arg.type = type
                 arguments << arg
                 self
             end

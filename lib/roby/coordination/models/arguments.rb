@@ -4,7 +4,7 @@ module Roby
             module Arguments
                 extend MetaRuby::Attributes
 
-                Argument = Struct.new :name, :required, :default
+                Argument = Struct.new :name, :required, :default, :type
 
                 # The set of arguments available to this execution context
                 # @return [Array<Symbol>]
@@ -21,8 +21,10 @@ module Roby
                 #   that 'nil' is considered as a proper default value.
                 # @return [Argument] the new argument object
                 def argument(name, options = Hash.new)
-                    options = Kernel.validate_options options, :default
-                    arguments[name.to_sym] = Argument.new(name.to_sym, !options.has_key?(:default), options[:default])
+                    options = Kernel.validate_options options, :default, :type
+                    raise ArgumentError, "Argument #{name} needs a type for #{self}" if options[:type].nil?
+
+                    arguments[name.to_sym] = Argument.new(name.to_sym, !options.has_key?(:default), options[:default], options[:type])
                 end
 
                 # Validates that the provided argument hash is valid for this

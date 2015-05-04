@@ -18,10 +18,10 @@ module Roby
 
             # The action itself
             # @return [Models::Action]
-            argument :action_model
+            argument :action_model, :type => :ignore
             # The arguments for the action method
             # @return [Hash]
-            argument :action_arguments, :default => Hash.new
+            argument :action_arguments, :default => Hash.new, :type => :ignore
 
             # The model of the roby task that is going to represent the action
             # in the plan

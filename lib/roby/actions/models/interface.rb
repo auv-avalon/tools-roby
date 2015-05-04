@@ -166,9 +166,10 @@ module Roby
 
                 action_model.arguments.each do |arg|
                     if !arg.required
-                        coordination_model.argument arg.name, :default => arg.default
+                        coordination_model.argument arg.name, :default => arg.default, :type => :string
                     else
-                        coordination_model.argument arg.name
+                        raise ArgumentError, "#{name} needs a type for #{arg}" if arg.type.nil?
+                        coordination_model.argument arg.name, :type => arg.type
                     end
                 end
                 coordination_model.parse(&block)

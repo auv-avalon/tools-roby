@@ -4,6 +4,7 @@ module Roby
         # and tasks)
         module Arguments
             extend MetaRuby::Attributes
+            inherited_attribute("argument_type", "argument_types") { Hash.new }
             inherited_attribute("argument_set", "argument_set") { ValueSet.new }
             inherited_attribute("argument_default", "argument_defaults", :map => true) { Hash.new }
 
@@ -51,7 +52,8 @@ module Roby
                     Roby.warn_deprecated "Roby::Task.argument(:arg1, :arg2) is deprecated. Use argument(:arg1); argument(:arg2) instead."
                 end
 
-                options = Kernel.validate_options(options || Hash.new, :default => nil)
+                #STDOUT.puts "Hallo: #{options}"
+                options = Kernel.validate_options(options || Hash.new, :default => nil, :type => nil)
 
                 new_arguments.each do |arg_name|
                     arg_name = arg_name.to_sym
@@ -59,6 +61,12 @@ module Roby
                     unless method_defined?(arg_name)
                         define_method(arg_name) { arguments[arg_name] }
                         define_method("#{arg_name}=") { |value| arguments[arg_name] = value }
+                    end
+
+                    if options.has_key?(:type)
+                        argument_types[arg_name] = options[:type]
+                    else
+                        raise ArgumentError, "Argument #{arg_name} for #{self} has no type set" 
                     end
 
                     if options.has_key?(:default)

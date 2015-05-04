@@ -1,7 +1,7 @@
 module Roby
     module Interface
         task_service 'Job' do
-            argument :job_id, :default => nil
+            argument :job_id, :default => nil, :type => :int
 
             def self.allocate_job_id
                 @@job_id += 1
