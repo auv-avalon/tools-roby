@@ -1,7 +1,7 @@
 require 'roby'
 require 'roby/distributed'
 require 'optparse'
-require 'utilrb/readline'
+require 'readline'
 
 app = Roby.app
 app.guess_app_dir
@@ -84,7 +84,7 @@ begin
     Thread.new do
         begin
             __main_remote_interface__.notification_loop(0.1) do |msg|
-                Readline.puts msg
+                #STDOUT.puts msg
             end
         rescue Exception => e
             puts e
